@@ -20,7 +20,7 @@
   },
   "docs": {
     "get_started": [
-      "index",
+      "get_started",
       "debugger",
       "the_architecture",
       "resources",
@@ -28,7 +28,7 @@
       "todomvc"
     ],
     "developer_guide": [
-      "index",
+      "introduction",
       "state",
       "connect",
       "signals",
@@ -43,20 +43,33 @@
       "test",
       "collaborate"
     ],
-    "packages": [
-      "index",
-      "firebase",
-      "useragent",
-      "forms",
-      "storage",
-      "function_tree",
-      "firebase_admin"
-    ],
+    "packages": [{
+      "name": "http",
+      "path": "../../packages/cerebral-provider-http/README"
+    }, {
+      "name": "firebase",
+      "path": "../../packages/cerebral-provider-firebase/README"
+    }, {
+      "name": "useragent",
+      "path": "../../packages/cerebral-module-useragent/README"
+    }, {
+      "name": "forms",
+      "path": "../../packages/cerebral-provider-forms/README"
+    }, {
+      "name": "storage",
+      "path": "../../packages/cerebral-provider-storage/README"
+    }, {
+      "name": "function_tree",
+      "path": "../../packages/function-tree/README"
+    }, {
+      "name": "firebase_admin",
+      "path": "../../packages/function-tree-firebase-admin/README"
+    }],
     "migration": [
-      "index"
+      "migration"
     ],
     "api": [
-      "index",
+      "controller",
       "sequence",
       "parallel",
       "devtools",

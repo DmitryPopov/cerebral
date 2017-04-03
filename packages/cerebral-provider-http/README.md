@@ -1,11 +1,31 @@
 # cerebral-provider-http
-HTTP Provider for Cerebral2
-Based on prior art from [cerebral-module-http](https://github.com/cerebral/cerebral-module-http)
 
-### Install
-This project is still in alpha. To test alpha version check [instructions in monorepo](https://github.com/cerebral/cerebral/blob/master/README.md).
+## install
+`npm install cerebral-provider-http@next --save --save-exact`
 
-### Instantiate
+## description
+The HTTP provider exposes the ability to do HTTP requests both in actions and directly in signals. It supports **cors** and file upload, with progress handling. It default to **json**, but you can configure it to whatever you want.
+
+```js
+import {set} from 'cerebral/operators'
+import {httpGet} from 'cerebral-provider-http/operators'
+import {state, props} from 'cerebral/tags'
+
+export default [
+  httpGet(`/items/${props`itemKey`}`), {
+    success: [
+      set(state`app.currentItem`, props`result`)
+    ],
+    error: [
+      set(state`app.error`, props`result`)
+    ]
+  }
+]
+```
+
+All factories of HTTP provider supports template tags.
+
+## instantiate
 
 ```js
 import {Controller} from 'cerebral'
@@ -41,9 +61,7 @@ function updateDefaultHttpOptions({http}) {
 }
 ```
 
-### Request
-
-#### Custom request
+## request
 
 ```js
 function someGetAction ({http}) {
@@ -74,8 +92,9 @@ function someGetAction ({http}) {
 }
 ```
 
-#### Convenience methods
+## get
 
+*action*
 ```js
 function someGetAction ({http}) {
   return http.get('/items', {
@@ -84,7 +103,26 @@ function someGetAction ({http}) {
     // Any options defined in "Custom request"
   })
 }
+```
 
+*factory*
+```js
+import {httpGet} from 'cerebral-provider-http/operators'
+
+export default [
+  httpGet('/items'), {
+    success: [],
+    error: [],
+    abort: [], // Optional
+    '${STATUS_CODE}': [] // Optionally any status code, ex. 404: []
+  }
+]
+```
+
+## post
+
+*action*
+```js
 function somePostAction ({http}) {
   return http.post('/items', {
     // BODY object
@@ -92,7 +130,30 @@ function somePostAction ({http}) {
     // Any options defined in "Custom request"
   })
 }
+```
 
+*factory*
+```js
+import {httpPost} from 'cerebral-provider-http/operators'
+import {props} from 'cerebral/tags'
+
+export default [
+  httpPost('/items', {
+    title: props`itemTitle`,
+    foo: 'bar'
+  }), {
+    success: [],
+    error: [],
+    abort: [], // Optional
+    '${STATUS_CODE}': [] // Optionally any status code, ex. 404: []
+  }
+]
+```
+
+## put
+
+*action*
+```js
 function somePutAction ({http}) {
   return http.put('/items/1', {
     // BODY object
@@ -100,7 +161,28 @@ function somePutAction ({http}) {
     // Any options defined in "Custom request"
   })
 }
+```
 
+*factory*
+```js
+import {httpPost} from 'cerebral-provider-http/operators'
+
+export default [
+  httpPut('/items', {
+    // BODY object
+  }), {
+    success: [],
+    error: [],
+    abort: [], // Optional
+    '${STATUS_CODE}': [] // Optionally any status code, ex. 404: []
+  }
+]
+```
+
+## patch
+
+*action*
+```js
 function somePatchAction ({http}) {
   return http.patch('/items/1', {
     // BODY object
@@ -108,7 +190,27 @@ function somePatchAction ({http}) {
     // Any options defined in "Custom request"
   })
 }
+```
 
+*factory*
+```js
+import {httpPost} from 'cerebral-provider-http/operators'
+import {state, props, string} from 'cerebral/tags'
+
+export default [
+  httpPatch(string`/items/${props`itemId`}`, state`patchData`), {
+    success: [],
+    error: [],
+    abort: [], // Optional
+    '${STATUS_CODE}': [] // Optionally any status code, ex. 404: []
+  }
+]
+```
+
+## delete
+
+*action*
+```js
 function someDeleteAction ({http}) {
   return http.delete('/items/1', {
     // QUERY object
@@ -118,63 +220,26 @@ function someDeleteAction ({http}) {
 }
 ```
 
-#### Factories
+*factory*
 ```js
-import {httpGet, httpPost, httpPut, httpPatch, httpDelete} from 'cerebral-provider-http'
-import {string, input, state} from 'cerebral/operators'
+import {httpPost} from 'cerebral-provider-http/operators'
+import {state} from 'cerebral/tags'
 
 export default [
-  // Static
-  httpGet('/items'), {
-    success: [],
-    error: []
-  },
-  // Dynamic
-  httpGet(string`/items/${input`itemId`}`), {
-    success: [],
-    error: []
-  },
-  // Pass data, either query or body, depending on factory used
-  httpPost('/items', {
-    title: input`itemTitle`,
-    foo: 'bar'
-  }), {
-    success: [],
-    error: []
-  },
-  // You can handle aborted if you use that functionality
-  httpPut('/items'), {
-    success: [],
-    error: [],
-    abort: []
-  },
-  // They all have this functionality
-  httpPatch(string`/items/${input`itemId`}`, state`patchData`), {
-    success: [],
-    error: []
-  },
-  // Kinda cool? :)
   httpDelete(string`/items/${state`currentItemId`}`), {
     success: [],
-    error: []
+    error: [],
+    abort: [], // Optional
+    '${STATUS_CODE}': [] // Optionally any status code, ex. 404: []
   }
 ]
 ```
 
-To check the response for a specific http status code, simply use the code for the path name and it will be called when the response code matches.
+## uploadFile
 
-```js
-export default [
-  httpPut('/items/1', { title: 'updated' }), {
-    '201': [],
-    success: [], // all other success codes will call this path
-    '401': [],
-    error: [] // all other error codes will call this path
-  }
-]
-```
+**COMING SOON**
 
-### Response
+## response
 
 ```js
 function someGetAction ({http}) {
@@ -196,7 +261,7 @@ function someGetAction ({http}) {
 }
 ```
 
-### Abort request
+## abort
 You can abort any running request, causing the request to resolve as status code **0** and set an **isAborted** property on the response object.
 
 ```js
@@ -222,7 +287,7 @@ export default [
 ]
 ```
 
-### Cors
+## cors
 Cors has been turned into a "black box" by jQuery. Cors is actually a very simple concept, but due to a lot of confusion of "Request not allowed", **cors** has been an option to help out. In HttpProvider we try to give you the insight to understand how cors actually works.
 
 Cors has nothing to do with the client. The only client configuration related to cors is the **withCredentials** option, which makes sure cookies are passed to the cross origin server. The only requirement for cors to work is that you pass the correct **Content-Type**. Now, this depends on the server in question. Some servers allows any content-type, others require a specific one. These are the typical ones:
@@ -232,61 +297,3 @@ Cors has nothing to do with the client. The only client configuration related to
 - application/json; charset=UTF-8
 
 Note that this is only related to the **request**. If you want to define what you want as response, you set the **Accept** header, which is *application/json* by default.
-
-### File upload
-Since Cerebral can only use serializable data in signals and the state tree, any file uploads must happen in components.
-
-```js
-import {FileUpload} from 'cerebral-provider-http'
-
-export default connect({
-  fileNames: 'app.fileNames'
-}, {
-  filesAdded: 'app.filesAdded',
-  uploadStarted: 'app.uploadStarted',
-  uploadProgressed: 'app.uploadProgressed',
-  uploadFinished: 'app.uploadFinished',
-  uploadFailed: 'app.uploadFailed'
-},
-  class UploadFile extends Component {
-    constructor (props) {
-      super(props);
-      this.filesToUpload = [];
-    }
-    onFilesChange (event) {
-      this.filesToUpload = event.target.files;
-      this.props.filesAdded({
-        fileNames: this.filesToUpload.map(file => file.name)
-      })
-    }
-    upload () {
-      const fileUpload = new FileUpload({
-        url: '/upload',
-        headers: {},
-        // Additional data on form. Do not use "file", it is taken
-        data: {},
-        // Triggers with object {progress: 54} and so on
-        onProgress: this.props.uploadProgressed
-      })
-
-      this.props.uploadStarted()
-      fileUpload.send(this.filesToUpload)
-          .then(this.props.uploadFinished)
-          .catch(this.props.uploadFailed)
-    }
-    render() {
-      return (
-        <div>
-          <h4>Please choose a file.</h4>
-          <div>
-            <input type="file" onChange={(event) => this.onFilesChange(event)}/><br/><br/>
-            <button disabled={this.filesToUpload.length === 0} onClick={() => this.upload()}>Upload</button>
-          </div>
-        </div>  
-      )
-    }
-  }
-)
-```
-
-You are also able to abort file uploads by calling fileUpload.abort(). This will result in a rejection of the send promise. The data passed will be: **{status: 0, result: null, isAborted: true}**.
