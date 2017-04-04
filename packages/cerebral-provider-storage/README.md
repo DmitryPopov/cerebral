@@ -1,7 +1,13 @@
 # cerebral-provider-storage
 
 ## install
+**NPM**
+
 `npm install cerebral-provider-storage@next --save --save-exact`
+
+**YARN**
+
+`yarn add cerebral-provider-storage@next --exact`
 
 ## description
 This module exposes local storage or session storage as a provider,

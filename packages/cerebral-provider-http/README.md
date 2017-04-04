@@ -1,7 +1,13 @@
 # cerebral-provider-http
 
 ## install
+**NPM**
+
 `npm install cerebral-provider-http@next --save --save-exact`
+
+**YARN**
+
+`yarn add cerebral-provider-http@next --exact`
 
 ## description
 The HTTP provider exposes the ability to do HTTP requests both in actions and directly in signals. It supports **cors** and file upload, with progress handling. It default to **json**, but you can configure it to whatever you want.

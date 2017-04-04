@@ -1,7 +1,13 @@
 # cerebral-provider-firebase
 
 ## install
+**NPM**
+
 `npm install cerebral-provider-firebase@next --save --save-next`
+
+**YARN**
+
+`yarn add cerebral-provider-firebase@next --exact`
 
 ## description
 The Firebase provider is a Cerebral friendly wrapper around the Firebase client. By default the Firebase client is heavily event based, even just getting some value, handling authentication etc. This is useful in some types of apps, but Cerebral has a very straight forward way of thinking about side effects. You will find that a lot of the API exposed by the Firebase client is simplified!

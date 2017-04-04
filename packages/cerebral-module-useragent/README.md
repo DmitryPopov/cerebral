@@ -1,7 +1,14 @@
 # cerebral-module-useragent
 
 ## install
+
+**NPM**
+
 `npm install cerebral-module-useragent@next --save --save-exact`
+
+**YARN**
+
+`yarn add cerebral-module-useragent@next --exact`
 
 ## description
 The useragent module puts information about the browser into your state tree, and it also updates this information when this information changes.

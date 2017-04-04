@@ -1,7 +1,13 @@
 # cerebral-provider-forms
 
 ## install
+**NPM**
+
 `npm install cerebral-provider-forms@next --save --save-exact`
+
+**YARN**
+
+`yarn add cerebral-provider-forms@next --exact`
 
 ## description
 The forms provider allows you to easily compute forms based on a number of rules. Easily add new rules, error messages and, if you want, add whatever you want to your fields for custom logic.

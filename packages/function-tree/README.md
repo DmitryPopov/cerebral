@@ -1,7 +1,13 @@
 # function-tree
 
 ## Install
+**NPM**
+
 `npm install function-tree@next --save --save-exact`
+
+**YARN**
+
+`yarn add function-tree@next --exact`
 
 ## Description
 Function-tree is the what Cerebral extends to create its signal implementation. Basically a function-tree allows you to execute a tree of functions. You can use the Cerebral debugger to debug function tree execution in any JS environment.
