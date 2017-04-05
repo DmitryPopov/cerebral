@@ -102,7 +102,7 @@ export default [
 ```js
 function myAction({router}) {
   // Go to a new url, replacing current url
-  router.goTo('/items')
+  router.redirect('/items')
 }
 ```
 
