@@ -21,70 +21,117 @@ Rxjs and Promises are also about execution control, but neither of them have dec
 ### instantiate
 
 ```js
-const FunctionTree = require('function-tree').FunctionTree
+import FunctionTree from 'function-tree'
+// Node:
+// const FunctionTree = require('function-tree').FunctionTree
 
-const execute = FunctionTree({
+const ft = new FunctionTree({
   // add side effect libraries to context
 })
 
-execute([
+ft.run([
+// returns a promise
   function someFunc (context) {},
   function someOtherFunc (context) {}
 ], {
   foo: 'bar' // optional payload
+})
+.catch((error) => {
+  // Current payload with execution details,
+  // can be passed in to a new execution (will be indicated in debugger)
+  error.payload
+
+  // A serialized version of the error. Name, message and stack, or custom error serialization
+  error.payload.error
 })
 ```
 
 You can also add multiple custom context providers by using an array:
 
 ```js
-const execute = FunctionTree([{
+const ft = new FunctionTree([{
     // add side effect libraries to context
   },
   SomeCustomProvider()
 ])
 ```
 
-In browser environment you can use **import**:
+## errors
 
+### FunctionTreeError (base)
 ```js
-import FunctionTree, {parallel, sequence} from 'function-tree'
+import {FunctionTreeError} from 'function-tree'
+// Node:
+// const FunctionTreeError = require('function-tree').FunctionTreeError
+
+// Error structure
+{
+  name: 'FunctionTreeError',
+  message: 'Some function-tree error'
+  stack: '...'  
+}
 ```
 
+### FunctionTreeExecutionError
+```js
+import {FunctionTreeExecutionError} from 'function-tree'
+// Node:
+// const FunctionTreeExecutionError = require('function-tree').FunctionTreeExecutionError
+
+// Error structure
+{
+  name: 'FunctionTreeExecutionError',
+  message: 'Some execution error'
+  execution: {name: 'someName'},
+  funcDetails: {name: 'someFunction', functionIndex: 5},
+  payload: {foo: 'bar'},
+  stack: '...'  
+}
+```
 
 ### devtools
 Download the function tree standalone debugger for [Mac](https://drive.google.com/file/d/0B1pYKovu9Upyb1Bkdm5IbkdBN3c/view?usp=sharing), [Windows](https://drive.google.com/file/d/0B1pYKovu9UpyMGRRbG45dWR6R1k/view?usp=sharing) or [Linux](https://drive.google.com/file/d/0B1pYKovu9UpyMFQ5dEdnSy1aN0E/view?usp=sharing).
 
 ```js
-const FunctionTree = require('function-tree').FunctionTree
-const Devtools = require('function-tree/devtools')
+import FunctionTree from 'function-tree'
+import Devtools from 'function-tree/devtools'
+// Node:
+// const FunctionTree = require('function-tree').FunctionTree
+// const Devtools = require('function-tree/devtools').Devtools
 
-// Instantiate the devtools with the port
-// you are running the debugger on
-const devtools = Devtools({
-  remoteDebugger: 'localhost:8585'
-})
+const ft = new FunctionTree([])
 
-// Add the provider to any instantiated
-// function tree you want to pass
-// information from
-const execute = FunctionTree([
-  devtools.Provider()
-])
-
-// Watch execution of the tree
-devtools.watchExecution(execute)
+// Pass the instance of function-tree to debug. You can
+// optionally pass an array of function-trees
+if (process.env.NODE_ENV !== 'production') {
+  Devtools(ft, {
+    remoteDebugger: 'localhost:8585'
+  })  
+}
 ```
 
-You can now use the debugger from your functions contexts and/or providers:
+You can use it when creating providers to easily wrap their usage:
 
 ```js
-function someFunction(context) {
-  context.debugger.send({
-    method: 'someMethod',
-    args: ['foo', 'bar'],
-    color: 'red'
-  })
+function MyProvider (options = {}) {
+  let cachedProvider = null
+
+  function createProvider (context) {
+    return {
+      doSomething() {},
+      doSomethingElse() {}
+    }
+  }
+
+  return (context) => {
+    context.myProvider = cachedProvider = (cachedProvider || createProvider(context))
+
+    if (context.debugger) {
+      context.debugger.wrapProvider('myProvider')
+    }
+
+    return context
+  }
 }
 ```
 
@@ -104,7 +151,9 @@ module.exports = [
 Or you can be explicit by using the **sequence** function:
 
 ```js
-const sequence = require('function-tree').sequence
+import {sequence} from 'function-tree'
+// Node:
+// const sequence = require('function-tree').sequence
 
 function someFunction (context) {}
 function someOtherFunction (context) {}
@@ -115,10 +164,12 @@ module.exports = sequence([
 ])
 ```
 
-The first argument to **sequence** can be a string, which names the sequence. This will be shown in the debugger.
+The first argument to **sequence** can be a string, which names the sequence. This will be shown in the debugger. If it is the root sequence it will be used as the name of the execution itself.
 
 ```js
-const sequence = require('function-tree').sequence
+import {sequence} from 'function-tree'
+// Node:
+// const sequence = require('function-tree').sequence
 
 function someFunction (context) {}
 function someOtherFunction (context) {}
@@ -131,7 +182,9 @@ module.exports = sequence('My awesome sequence', [
 
 ### parallel
 ```js
-const parallel = require('function-tree').parallel
+import {parallel} from 'function-tree'
+// Node:
+// const sequence = require('function-tree').parallel
 
 function someFunction (context) {}
 function someOtherFunction (context) {}
@@ -149,25 +202,29 @@ Even though **someFunction** returns a Promise, **someOtherFunction** will be ru
 #### props
 
 ```js
-const FunctionTree = require('function-tree').FunctionTree
+import FunctionTree from 'function-tree'
+// Node:
+// const FunctionTree = require('function-tree').FunctionTree
 
 function funcA (context) {
   context.props.foo // "bar"
 }
 
-const execute = FunctionTree()
+const ft = new FunctionTree()
 const tree = [
   funcA
 ]
 
-execute(tree, {foo: 'bar'})
+ft.run(tree, {foo: 'bar'})
 ```
 
 #### path
 The path is only available on the context when the function can diverge the execution down a path.
 
 ```js
-const FunctionTree = require('function-tree').FunctionTree
+import FunctionTree from 'function-tree'
+// Node:
+// const FunctionTree = require('function-tree').FunctionTree
 
 function funcA (context) {
   context.props.foo // "bar"
@@ -192,7 +249,7 @@ function funcC(context) {
   context.props.foo3 // "bar3"
 }
 
-const execute = FunctionTree([])
+const ft = new FunctionTree([])
 const tree = [
   funcA, {
     pathA: [
@@ -203,67 +260,25 @@ const tree = [
   }
 ]
 
-execute(tree, {foo: 'bar'})
-```
-
-#### execution
-
-##### retry
-```js
-function funcA (context) {
-  return new Promise(resolve => {
-    setTimeout(resolve, 500)
-  })
-}
-
-function funcB (context) {
-  if (context.props.retryCount < 3) {
-    return context.execution.retry({
-      retryCount: context.props.retryCount + 1
-    })
-  }
-}
-
-const tree = [
-  funcA,
-  funcB
-]
-```
-##### abort
-```js
-const FunctionTree = require('function-tree').FunctionTree
-const execute = FunctionTree([])
-
-function funcA (context) {
-  return context.execution.abort()
-}
-
-function funcB (context) {
-  // Does not run
-}
-
-const tree = [
-  funcA,
-  funcB
-]
-
-execute.on('abort', (functionDetails, payload) => {})
-
-execute(tree)
+ft.run(tree, {foo: 'bar'})
 ```
 
 ### error
 ```js
-const FunctionTree = require('function-tree').FunctionTree
-const execute = FunctionTree([])
+import FunctionTree from 'function-tree'
+// Node:
+// const FunctionTree = require('function-tree').FunctionTree
+const ft = new FunctionTree([])
 
 // As an event (async)
-execute.on('error', function (error, execution, payload) {
+ft.on('error', function (error, execution, payload) {})
 
-})
+// As callback for single execution
+// Triggers sync/async depending on where error occurs
+ft.run(tree, (error) => {})
 
 // As callback (sync)
-execute(tree, (error, execution, payload) => {
+ft.run(tree, (error, execution, payload) => {
   if (error) {
     // There is an error
   }
@@ -274,7 +289,9 @@ execute(tree, (error, execution, payload) => {
 A provider gives you access to the current context and other information about the execution. It is required that you return the context or a mutated version of it.
 
 ```js
-const FunctionTree = require('function-tree').FunctionTree
+import FunctionTree from 'function-tree'
+// Node:
+// const FunctionTree = require('function-tree').FunctionTree
 
 function MyProvider(context, functionDetails, payload) {
   context // Current context
@@ -296,56 +313,77 @@ function MyProvider(context, functionDetails, payload) {
   return context // Always return the changed context
 }
 
-const execute = FunctionTree([
+const ft = new FunctionTree([
   MyProvider
 ])
 ```
 
 Providers lets us do some pretty amazing things. The debugger for **function-tree** is actually just a provider that sends information to the debugger about execution and exposes an API for other providers to send their own data to the debugger.
 
+#### StopExecutionProvider
+By using a condition you can tell the function tree to stop executions.
+
+```js
+import {StopExecutionProvider} from 'function-tree'
+// Node:
+// const StopExecutionProvider = require('function-tree').StopExecutionProvider
+
+const ft = new FunctionTree([
+  StopExecutionProvider({
+    nameOfExecution (context) {
+      return context.props.stop
+    }
+  })
+])
+```
+
+If the condition returns true the execution will throw an error and stop.
+
 ### events
 The execute function is also an event emitter.
 
 ```js
-const FunctionTree = require('function-tree').FunctionTree
+import FunctionTree from 'function-tree'
+// Node:
+// const FunctionTree = require('function-tree').FunctionTree
 
-const execute = FunctionTree([])
+const ft = new FunctionTree([])
 const tree = [
   funcA
 ]
 
 // When an error is thrown, also catches promise errors
-execute.on('error', (error, execution, payload) => {})
+ft.on('error', (error, execution, payload) => {})
 
 // When a function tree is executed
-execute.on('start', (execution, payload) => {})
+ft.on('start', (execution, payload) => {})
 
 // When a function tree execution has ended
-execute.on('end', (execution, payload) => {})
+ft.on('end', (execution, payload) => {})
 
 // When a function tree goes down a path
-execute.on('pathStart', (execution, payload) => {})
+ft.on('pathStart', (execution, payload) => {})
 
 // When a function tree ends execution of a path
-execute.on('pathEnd', (execution, payload) => {})
+ft.on('pathEnd', (execution, payload) => {})
 
 // When a function in a function tree starts executing
-execute.on('functionStart', (execution, functionDetails, payload) => {})
+ft.on('functionStart', (execution, functionDetails, payload) => {})
 
 // When a function in a function tree stops executing
-execute.on('functionEnd', (execution, functionDetails, payload) => {})
+ft.on('functionEnd', (execution, functionDetails, payload) => {})
 
 // Triggers when an async function has been run
-execute.on('asyncFunction', (execution, functionDetails, payload) => {})
+ft.on('asyncFunction', (execution, functionDetails, payload) => {})
 
 // When a parallel execution is about to happen (array in array)
-execute.on('parallelStart', (execution, payload, functionsToResolveCount) => {})
+ft.on('parallelStart', (execution, payload, functionsToResolveCount) => {})
 
 // When a function in parallel execution is done executing
-execute.on('parallelProgress', (execution, payload, functionsStillResolvingCount) => {})
+ft.on('parallelProgress', (execution, payload, functionsStillResolvingCount) => {})
 
 // When a parallel execution is done
-execute.on('parallelEnd', (execution, payload, functionsExecutedCount) => {})
+ft.on('parallelEnd', (execution, payload, functionsExecutedCount) => {})
 
-execute(tree)
+ft.run(tree)
 ```

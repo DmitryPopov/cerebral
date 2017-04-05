@@ -21,8 +21,8 @@
   "docs": {
     "get_started": [
       "../../docs/get_started/get_started",
-      "../../docs/get_started/debugger",
       "../../docs/get_started/the_architecture",
+      "../../docs/get_started/debugger",
       "../../docs/get_started/resources",
       "../../docs/get_started/counter",
       "../../docs/get_started/todomvc"
@@ -40,6 +40,7 @@
       "../../docs/developer_guide/routing",
       "../../docs/developer_guide/organize",
       "../../docs/developer_guide/providers",
+      "../../docs/developer_guide/errors",
       "../../docs/developer_guide/test",
       "../../docs/developer_guide/collaborate"
     ],

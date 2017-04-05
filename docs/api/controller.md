@@ -18,10 +18,44 @@ export default controller
 ```
 
 ## Errors
-Cerebral knows about any errors that happen during a signal execution, synchronous and asynchronous. Cerebral throws these errors to the console, but you can intercept this if you want to pass errors to tracking services etc. The error will be thrown to console after your error handler(s) has run.
+
+### Signal
+```js
+import {Controller} from 'cerebral'
+
+const controller = Controller({
+  signals: {
+    somethingHappened: {
+      signal: [somAction],
+      catch: new Map([
+        [SomeCustomErrorInstanceType, [someCustomCatchHandlerSequence]],
+        [Error, [someCatchHandlerSequence]]
+      ])
+    }
+  }
+})
+
+export default controller
+```
+
+### Global
+```js
+import {Controller} from 'cerebral'
+
+const controller = Controller({
+  catch: new Map([
+    [SomeCustomErrorInstanceType, [someCustomCatchHandlerSequence]],
+    [Error, [someCatchHandlerSequence]]
+  ])
+})
+
+export default controller
+```
+
+You can also define a global error handler. This error handler will be called no matter if an error is caught or not. Useful for tracking failures in production.
 
 ```js
-controller.on('error', function (error, execution, functionDetails) {})
+controller.on('error', (error) => {})
 ```
 
 ## Methods

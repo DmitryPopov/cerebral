@@ -78,7 +78,7 @@ export default function Router (options = {}) {
 
     function init () {
       addressbar.on('change', onUrlChange)
-      controller.runTree.on('start', onSignalStart)
+      controller.on('start', onSignalStart)
       controller.once('initialized', () => {
         if (!options.preventAutostart) {
           onUrlChange()
